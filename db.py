@@ -4,8 +4,9 @@ con = psycopg2.connect(
     database="part4",
     user="part4",
     password="part4_GfhjkzYtn321",
-    host="198.245.61.187",
-    # host="localhost",
+    # host="116.203.219.63",
+    # host="198.245.61.187",
+    host="localhost",
     port="5432"
 )
 
