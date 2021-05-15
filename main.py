@@ -4,7 +4,6 @@ from datetime import datetime
 
 import pandas as pd
 from termcolor import colored
-from logzero import logger, logfile
 
 import db_utils
 
@@ -120,16 +119,7 @@ def search_analog(model, analog, a1, models_list, b):
     return b_analog
 
 
-def load_log():
-    pars_file_list = []
-    with open("log_console.log", "r") as file:
-        for line in file:
-            pars_file_list.append(re.sub('.*] ', '', line).strip().replace('\\', ''))
-    return pars_file_list
-
-
 def link_supplies():
-    logfile('log_console.log')
     try:
         dont_analogs = pd.read_csv('dont_analogs.csv', sep=';', header=None)
         dont_analogs = dont_analogs.values.tolist()
@@ -141,12 +131,6 @@ def link_supplies():
     except:
         true_analogs = []
 
-    # load linked partcode_id
-    # linked_parcodes_list = []
-    # try:
-    #     linked_parcodes_list = load_log()
-    # except:
-    #     pass
     # get all supplies id
     supplies_list = db_utils.get_all_supplis_id()
     # get all analog models for supplies
@@ -176,7 +160,7 @@ def link_supplies():
                                     for dm in dont_analogs:
                                         if re.search(am[2], dm[0]) and re.search(m[2], dm[0]):
                                             t_model = True
-                                            logger.info(f"{am[2]} <> {m[2]}")
+                                            print(f"{am[2]} <> {m[2]}", '- FALSE')
                                             continue
                                     if t_model:
                                         continue
@@ -184,7 +168,7 @@ def link_supplies():
                                         if re.search(am[2], tm[0]) and re.search(m[2], tm[0]):
                                             db_utils.link_model_supplies(m[0], ids[0])
                                             t_model = True
-                                            logger.info(f"{am[2]} <> {m[2]}")
+                                            print(f"{am[2]} <> {m[2]}", '- TRUE')
                                             continue
                                     if t_model:
                                         continue
@@ -193,15 +177,15 @@ def link_supplies():
                                         text_highlighting(am[2], m[2])
                                     percent = round(int(count / ss1_weight * 100))
 
-                                    if percent > 70 and weight > 0 and model_weight > 0 or \
-                                            percent >= 50 and count >= 1 and ss1_weight >= 1 and ss2_weight >= 2 and model_weight >= 0.8:
+                                    if percent > 70 and weight > 0 and model_weight > 0 or percent >= 50 and \
+                                            count >= 1 and ss1_weight >= 1 and ss2_weight >= 2 and model_weight >= 0.8:
 
                                         percent = colored(percent, 'green')
                                         print(f"{percent}%, {float(count)}, {ss1_weight}, {ss2_weight}, {weight}, "
                                               f"{float(model_weight)}: {r1} = {r2}", colored('Ok', 'green'))
                                         db_utils.link_model_supplies(m[0], ids[0])
-                                    elif percent > 40 and weight > 0 and model_weight > 0 or \
-                                            percent >= 50 and count >= 1 and ss1_weight >= 2 and ss2_weight >= 2 and model_weight >= 0.2:
+                                    elif percent > 40 and weight > 0 and model_weight > 0 or  percent >= 50 and \
+                                            count >= 1 and ss1_weight >= 2 and ss2_weight >= 2 and model_weight >= 0.2:
                                         if query_yes_no(
                                                 f"{percent}%, {float(count)}, {ss1_weight}, {ss2_weight}, {weight}, "
                                                 f"{float(model_weight)}: {r1} <> {r2}", None):
@@ -213,15 +197,13 @@ def link_supplies():
                                         else:
                                             df = pd.DataFrame([f"{am[2]} <> {m[2]}"])
                                             df.to_csv('dont_analogs.csv', index=False, mode='a', header=False, sep=";")
-                                    logger.info(f"{am[2]} <> {m[2]}")
+                                        print(f"{am[2]} <> {m[2]}", '- UNKNOWN')
 
 
 def main():
     start_time = datetime.now()
     print(start_time)
-    # start()
     link_supplies()
-
     print(datetime.now() - start_time)
 
 
